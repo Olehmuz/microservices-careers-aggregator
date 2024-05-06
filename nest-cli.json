@@ -43,6 +43,24 @@
       "compilerOptions": {
         "tsConfigPath": "libs/common/tsconfig.lib.json"
       }
+    },
+    "careers": {
+      "type": "application",
+      "root": "apps/careers",
+      "entryFile": "main",
+      "sourceRoot": "apps/careers/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/careers/tsconfig.app.json"
+      }
+    },
+    "parser": {
+      "type": "application",
+      "root": "apps/parser",
+      "entryFile": "main",
+      "sourceRoot": "apps/parser/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/parser/tsconfig.app.json"
+      }
     }
   }
 }

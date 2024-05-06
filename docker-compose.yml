@@ -1,4 +1,40 @@
 services:
+  parser:
+    build:
+      context: .
+      dockerfile: ./apps/parser/Dockerfile
+      target: development
+    command: npm run start:dev parser
+    env_file:
+      - ./apps/parser/.env
+    depends_on:
+      - mongodb
+      - careers
+      - auth
+      - rabbitmq
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - '3003:3003'
+  careers:
+    build:
+      context: .
+      dockerfile: ./apps/careers/Dockerfile
+      target: development
+    command: npm run start:dev careers
+    env_file:
+      - ./apps/careers/.env
+    depends_on:
+      - mongodb
+      - billing
+      - auth
+      - rabbitmq
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - '3002:3002'
   orders:
     build:
       context: .
@@ -8,9 +44,7 @@ services:
     env_file:
       - ./apps/orders/.env
     depends_on:
-      - mongodb-primary
-      - mongodb-secondary
-      - mongodb-arbiter
+      - mongodb
       - billing
       - auth
       - rabbitmq
@@ -28,9 +62,7 @@ services:
     env_file:
       - ./apps/billing/.env
     depends_on:
-      - mongodb-primary
-      - mongodb-secondary
-      - mongodb-arbiter
+      - mongodb
       - rabbitmq
       - auth
     volumes:
@@ -47,9 +79,7 @@ services:
     env_file:
       - ./apps/auth/.env
     depends_on:
-      - mongodb-primary
-      - mongodb-secondary
-      - mongodb-arbiter
+      - mongodb
       - rabbitmq
     volumes:
       - .:/usr/src/app
@@ -58,40 +88,12 @@ services:
     image: rabbitmq
     ports:
       - '5672:5672'
-  mongodb-primary:
-    image: docker.io/bitnami/mongodb:5.0
-    environment:
-      - MONGODB_ADVERTISED_HOSTNAME=mongodb-primary
-      - MONGODB_REPLICA_SET_MODE=primary
-      - MONGODB_ROOT_PASSWORD=password123
-      - MONGODB_REPLICA_SET_KEY=replicasetkey123
+  mongodb:
+    image: 'mongo:latest'
     volumes:
-      - 'mongodb_master_data:/bitnami/mongodb'
+      - mongodb_data:/data/db  
     ports:
       - '27017:27017'
 
-  mongodb-secondary:
-    image: docker.io/bitnami/mongodb:5.0
-    depends_on:
-      - mongodb-primary
-    environment:
-      - MONGODB_ADVERTISED_HOSTNAME=mongodb-secondary
-      - MONGODB_REPLICA_SET_MODE=secondary
-      - MONGODB_INITIAL_PRIMARY_HOST=mongodb-primary
-      - MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD=password123
-      - MONGODB_REPLICA_SET_KEY=replicasetkey123
-
-  mongodb-arbiter:
-    image: docker.io/bitnami/mongodb:5.0
-    depends_on:
-      - mongodb-primary
-    environment:
-      - MONGODB_ADVERTISED_HOSTNAME=mongodb-arbiter
-      - MONGODB_REPLICA_SET_MODE=arbiter
-      - MONGODB_INITIAL_PRIMARY_HOST=mongodb-primary
-      - MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD=password123
-      - MONGODB_REPLICA_SET_KEY=replicasetkey123
-
 volumes:
-  mongodb_master_data:
-    driver: local
+  mongodb_data:

@@ -1,4 +1,9 @@
-import { Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  InternalServerErrorException,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   FilterQuery,
   Model,
@@ -21,56 +26,100 @@ export abstract class AbstractRepository<TDocument extends AbstractDocument> {
     document: Omit<TDocument, '_id'>,
     options?: SaveOptions,
   ): Promise<TDocument> {
-    const createdDocument = new this.model({
-      ...document,
-      _id: new Types.ObjectId(),
-    });
-    return (
-      await createdDocument.save(options)
-    ).toJSON() as unknown as TDocument;
+    try {
+      const createdDocument = new this.model({
+        ...document,
+        _id: new Types.ObjectId(),
+      });
+      return (
+        await createdDocument.save(options)
+      ).toJSON() as unknown as TDocument;
+    } catch (error) {
+      this.logger.error('Failed to create document', error);
+      throw new InternalServerErrorException(error);
+    }
   }
 
   async findOne(filterQuery: FilterQuery<TDocument>): Promise<TDocument> {
-    const document = await this.model.findOne(filterQuery, {}, { lean: true });
+    try {
+      const document = await this.model.findOne(
+        filterQuery,
+        {},
+        { lean: true },
+      );
 
-    if (!document) {
-      this.logger.warn('Document not found with filterQuery', filterQuery);
-      throw new NotFoundException('Document not found.');
+      if (!document) {
+        this.logger.warn('Document not found with filterQuery', filterQuery);
+        throw new NotFoundException('Document not found.');
+      }
+
+      return document;
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
+      this.logger.error('Failed to find document', error);
+      throw new BadRequestException(error);
     }
-
-    return document;
   }
 
   async findOneAndUpdate(
     filterQuery: FilterQuery<TDocument>,
     update: UpdateQuery<TDocument>,
-  ) {
-    const document = await this.model.findOneAndUpdate(filterQuery, update, {
-      lean: true,
-      new: true,
-    });
+  ): Promise<TDocument> {
+    try {
+      const document = await this.model.findOneAndUpdate(filterQuery, update, {
+        lean: true,
+        new: true,
+      });
 
-    if (!document) {
-      this.logger.warn(`Document not found with filterQuery:`, filterQuery);
-      throw new NotFoundException('Document not found.');
+      if (!document) {
+        this.logger.warn(`Document not found with filterQuery:`, filterQuery);
+        throw new NotFoundException('Document not found.');
+      }
+
+      return document;
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
+      this.logger.error('Failed to update document', error);
+      throw new BadRequestException(error);
     }
-
-    return document;
   }
 
   async upsert(
     filterQuery: FilterQuery<TDocument>,
     document: Partial<TDocument>,
-  ) {
-    return this.model.findOneAndUpdate(filterQuery, document, {
-      lean: true,
-      upsert: true,
-      new: true,
-    });
+  ): Promise<TDocument> {
+    try {
+      return this.model.findOneAndUpdate(filterQuery, document, {
+        lean: true,
+        upsert: true,
+        new: true,
+      });
+    } catch (error) {
+      this.logger.error('Failed to upsert document', error);
+      throw new InternalServerErrorException(error);
+    }
   }
 
-  async find(filterQuery: FilterQuery<TDocument>) {
-    return this.model.find(filterQuery, {}, { lean: true });
+  async find(filterQuery: FilterQuery<TDocument>): Promise<TDocument[]> {
+    try {
+      return this.model.find(filterQuery, {}, { lean: true });
+    } catch (error) {
+      this.logger.error('Failed to find document', error);
+      throw new BadRequestException(error);
+    }
+  }
+
+  async delete(filterQuery: FilterQuery<TDocument>) {
+    try {
+      const result = await this.model.deleteOne(filterQuery);
+      if (result.deletedCount === 0) {
+        throw new NotFoundException('Document not found.');
+      }
+      return result;
+    } catch (error) {
+      this.logger.error('Failed to delete document', error);
+      throw new InternalServerErrorException(error);
+    }
   }
 
   async startTransaction() {
