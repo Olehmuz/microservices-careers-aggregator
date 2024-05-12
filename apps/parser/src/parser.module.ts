@@ -5,6 +5,7 @@ import { RmqModule } from '@app/common';
 import { CAREERS_SERVICE } from '../../../libs/common/src/constants/services';
 import { ConfigModule } from '@nestjs/config';
 import * as Joi from 'joi';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import * as Joi from 'joi';
     RmqModule.register({
       name: CAREERS_SERVICE,
     }),
+    ScheduleModule.forRoot(),
   ],
   controllers: [ParserController],
   providers: [ParserService],

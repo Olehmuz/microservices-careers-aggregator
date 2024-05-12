@@ -1,22 +1,13 @@
 {
   "collection": "@nestjs/schematics",
-  "sourceRoot": "apps/orders/src",
+  "sourceRoot": "apps/careers/src",
   "monorepo": true,
-  "root": "apps/orders",
+  "root": "apps/careers",
   "compilerOptions": {
     "webpack": true,
-    "tsConfigPath": "apps/orders/tsconfig.app.json"
+    "tsConfigPath": "apps/careers/tsconfig.app.json"
   },
   "projects": {
-    "orders": {
-      "type": "application",
-      "root": "apps/orders",
-      "entryFile": "main",
-      "sourceRoot": "apps/orders/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/orders/tsconfig.app.json"
-      }
-    },
     "billing": {
       "type": "application",
       "root": "apps/billing",

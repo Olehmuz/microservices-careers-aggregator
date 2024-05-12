@@ -35,24 +35,6 @@ services:
       - /usr/src/app/node_modules
     ports:
       - '3002:3002'
-  orders:
-    build:
-      context: .
-      dockerfile: ./apps/orders/Dockerfile
-      target: development
-    command: npm run start:dev orders
-    env_file:
-      - ./apps/orders/.env
-    depends_on:
-      - mongodb
-      - billing
-      - auth
-      - rabbitmq
-    volumes:
-      - .:/usr/src/app
-      - /usr/src/app/node_modules
-    ports:
-      - '3000:3000'
   billing:
     build:
       context: .

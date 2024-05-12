@@ -11,11 +11,21 @@ import {
 import { CareersService } from './careers.service';
 import { CreateCareerDto } from './dto/create-career.dto';
 import { UpdateCareerDto } from './dto/update-career.dto';
-import { MessagePattern, Payload } from '@nestjs/microservices';
+import {
+  Ctx,
+  EventPattern,
+  MessagePattern,
+  Payload,
+  RmqContext,
+} from '@nestjs/microservices';
+import { RmqService } from '@app/common';
 
 @Controller('careers')
 export class CareersController {
-  constructor(private readonly careersService: CareersService) {}
+  constructor(
+    private readonly careersService: CareersService,
+    private readonly rmqService: RmqService,
+  ) {}
 
   @Get()
   @MessagePattern({ cmd: 'get_all_careers' })
@@ -33,11 +43,13 @@ export class CareersController {
     return this.careersService.create(dto);
   }
 
-  @MessagePattern({ cmd: 'create_career' })
-  async handleCreateCareer(
-    @Payload(new ValidationPipe()) dto: CreateCareerDto,
+  @EventPattern('create_careers')
+  handleParsedCareers(
+    @Payload(new ValidationPipe()) dtos: CreateCareerDto[],
+    @Ctx() context: RmqContext,
   ) {
-    return this.careersService.create(dto);
+    this.careersService.createCareersFromParsedData(dtos);
+    this.rmqService.ack(context);
   }
 
   @Patch(':id')

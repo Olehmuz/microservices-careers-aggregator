@@ -1,8 +1,8 @@
-import { Controller, Get, Inject, Post } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
-
-import { CAREERS_SERVICE } from '@app/common/constants/services';
+import { Controller, Inject } from '@nestjs/common';
 import { ParserService } from './parser.service';
+import { CAREERS_SERVICE } from '@app/common/constants/services';
+import { ClientProxy } from '@nestjs/microservices';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Controller()
 export class ParserController {
@@ -11,23 +11,9 @@ export class ParserController {
     @Inject(CAREERS_SERVICE) private careersClient: ClientProxy,
   ) {}
 
-  @Get()
-  async getCareers() {
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async parseCareers() {
+    console.log('Parsing careers...');
     return this.parserService.parse();
-    // return this.careersClient.send({ cmd: 'get_all_careers' }, {});
-  }
-
-  @Post()
-  async createCareer() {
-    return this.careersClient.send(
-      { cmd: 'create_career' },
-      {
-        title: 'full-stack developer',
-        description: 'Node.js, React.js',
-        location: 'Ukraine',
-        company: 'Keenethics',
-        url: 'someurl',
-      },
-    );
   }
 }

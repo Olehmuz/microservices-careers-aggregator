@@ -12,17 +12,23 @@ export class Career extends AbstractDocument {
   @Prop({ required: true })
   description: string;
 
-  @Prop()
-  location: string;
-
-  @Prop()
-  url: string;
-
-  @Prop()
-  salary: number;
-
-  @Prop()
+  @Prop({ required: true })
   careerId: string;
+
+  @Prop({ required: true })
+  postedAt: Date;
+
+  @Prop({ required: false })
+  location?: string;
+
+  @Prop({ required: false })
+  url?: string;
+
+  @Prop({ required: false })
+  salary?: number;
+
+  @Prop({ required: false })
+  categories?: string[];
 }
 
 export const CareerSchema = SchemaFactory.createForClass(Career);

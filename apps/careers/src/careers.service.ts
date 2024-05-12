@@ -8,6 +8,22 @@ import { Career } from './schemas/career.schema';
 @Injectable()
 export class CareersService {
   constructor(private readonly careersRepository: CareersRepository) {}
+
+  async createCareersFromParsedData(dtos: CreateCareerDto[]) {
+    for (const dto of dtos) {
+      const existedArticle = await this.careersRepository.findOne({
+        careerId: dto.careerId,
+      });
+
+      if (existedArticle) {
+        // console.log(`[PARSER SERVICE] Career ${dto.careerId} already exists`);
+        continue;
+      }
+      await this.careersRepository.create(dto);
+      console.log(`[PARSER SERVICE] Career ${dto.careerId} was created`);
+    }
+  }
+
   create(createCareerDto: CreateCareerDto) {
     return this.careersRepository.create(createCareerDto);
   }
