@@ -34,3 +34,29 @@ export class RmqModule {
     };
   }
 }
+
+// export class RmqModule {
+//   static register(options: RmqModuleOptions): DynamicModule {
+//     return {
+//       module: RmqModule,
+//       imports: [
+//         ClientsModule.registerAsync(
+//           options.clients.map((client) => ({
+//             name: client.name,
+//             useFactory: (configService: ConfigService) => ({
+//               transport: Transport.RMQ,
+//               options: {
+//                 urls: [configService.get<string>('RABBIT_MQ_URI')],
+//                 queue: configService.get<string>(
+//                   `RABBIT_MQ_${client.name}_QUEUE`,
+//                 ),
+//               },
+//             }),
+//             inject: [ConfigService],
+//           })),
+//         ),
+//       ],
+//       exports: [ClientsModule],
+//     };
+//   }
+// }

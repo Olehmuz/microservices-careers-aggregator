@@ -1,7 +1,6 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "esModuleInterop": true,
     "moduleResolution": "node",
     "declaration": false,
     "outDir": "../../dist/apps/parser"
